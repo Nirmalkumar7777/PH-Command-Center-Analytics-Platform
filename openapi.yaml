@@ -1,0 +1,998 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: MarketShield AI - Financial Market Surveillance API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: dashboard
+    description: Dashboard summary endpoints
+  - name: trades
+    description: Trade monitoring
+  - name: detection
+    description: Insider trading detection
+  - name: news
+    description: News and NLP analysis
+  - name: investigations
+    description: AI Investigation Center
+  - name: reports
+    description: Reports
+  - name: alerts
+    description: Alert system
+  - name: companies
+    description: Company data
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Dashboard KPI summary
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/trade-volume:
+    get:
+      operationId: getTradeVolumeTimeseries
+      tags: [dashboard]
+      summary: Trade volume timeseries for chart
+      responses:
+        "200":
+          description: Timeseries data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TimeseriesPoint"
+
+  /dashboard/risk-distribution:
+    get:
+      operationId: getRiskDistribution
+      tags: [dashboard]
+      summary: Risk score distribution breakdown
+      responses:
+        "200":
+          description: Risk distribution
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RiskBucket"
+
+  /dashboard/top-high-risk-traders:
+    get:
+      operationId: getTopHighRiskTraders
+      tags: [dashboard]
+      summary: Top high-risk traders list
+      responses:
+        "200":
+          description: High risk traders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HighRiskTrader"
+
+  /dashboard/sentiment-trend:
+    get:
+      operationId: getSentimentTrend
+      tags: [dashboard]
+      summary: Market sentiment trend timeseries
+      responses:
+        "200":
+          description: Sentiment trend
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SentimentPoint"
+
+  /trades:
+    get:
+      operationId: listTrades
+      tags: [trades]
+      summary: List trades with optional filters
+      parameters:
+        - name: symbol
+          in: query
+          schema:
+            type: string
+        - name: riskLevel
+          in: query
+          schema:
+            type: string
+            enum: [low, medium, high, critical]
+        - name: suspicious
+          in: query
+          schema:
+            type: boolean
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: List of trades
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TradeList"
+    post:
+      operationId: createTrade
+      tags: [trades]
+      summary: Record a new trade
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TradeInput"
+      responses:
+        "201":
+          description: Created trade
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trade"
+
+  /trades/{id}:
+    get:
+      operationId: getTrade
+      tags: [trades]
+      summary: Get trade details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Trade details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trade"
+        "404":
+          description: Not found
+
+  /trades/volume-analysis:
+    get:
+      operationId: getVolumeAnalysis
+      tags: [trades]
+      summary: Volume anomaly analysis per symbol
+      responses:
+        "200":
+          description: Volume analysis
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VolumeAnalysis"
+
+  /detection/anomalies:
+    get:
+      operationId: listAnomalies
+      tags: [detection]
+      summary: ML anomaly detection results
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, under_review, confirmed, cleared]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: Anomaly detection results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Anomaly"
+
+  /detection/risk-scores:
+    get:
+      operationId: listRiskScores
+      tags: [detection]
+      summary: Insider trading risk scores
+      responses:
+        "200":
+          description: Risk scores
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RiskScore"
+
+  /detection/patterns:
+    get:
+      operationId: listPatterns
+      tags: [detection]
+      summary: Detected trading patterns
+      responses:
+        "200":
+          description: Detected patterns
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TradingPattern"
+
+  /detection/feature-importance:
+    get:
+      operationId: getFeatureImportance
+      tags: [detection]
+      summary: ML model feature importance scores
+      responses:
+        "200":
+          description: Feature importance
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FeatureImportance"
+
+  /news:
+    get:
+      operationId: listNews
+      tags: [news]
+      summary: Financial news feed with sentiment
+      parameters:
+        - name: sentiment
+          in: query
+          schema:
+            type: string
+            enum: [positive, neutral, negative]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: News articles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NewsArticle"
+
+  /news/entities:
+    get:
+      operationId: listNamedEntities
+      tags: [news]
+      summary: Named entities recognized in news
+      responses:
+        "200":
+          description: Named entities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NamedEntity"
+
+  /news/market-events:
+    get:
+      operationId: listMarketEvents
+      tags: [news]
+      summary: Market-moving events detected
+      responses:
+        "200":
+          description: Market events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MarketEvent"
+
+  /investigations:
+    get:
+      operationId: listInvestigations
+      tags: [investigations]
+      summary: List all investigations
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [open, in_progress, closed, escalated]
+      responses:
+        "200":
+          description: Investigations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Investigation"
+    post:
+      operationId: createInvestigation
+      tags: [investigations]
+      summary: Create a new investigation case
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvestigationInput"
+      responses:
+        "201":
+          description: Created investigation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Investigation"
+
+  /investigations/{id}:
+    get:
+      operationId: getInvestigation
+      tags: [investigations]
+      summary: Get investigation details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Investigation details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Investigation"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateInvestigation
+      tags: [investigations]
+      summary: Update investigation status or notes
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvestigationUpdate"
+      responses:
+        "200":
+          description: Updated investigation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Investigation"
+
+  /alerts:
+    get:
+      operationId: listAlerts
+      tags: [alerts]
+      summary: List system alerts
+      parameters:
+        - name: severity
+          in: query
+          schema:
+            type: string
+            enum: [low, medium, high, critical]
+        - name: resolved
+          in: query
+          schema:
+            type: boolean
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 30
+      responses:
+        "200":
+          description: Alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Alert"
+
+  /alerts/{id}/resolve:
+    post:
+      operationId: resolveAlert
+      tags: [alerts]
+      summary: Mark alert as resolved
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Resolved alert
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Alert"
+
+  /companies:
+    get:
+      operationId: listCompanies
+      tags: [companies]
+      summary: List tracked companies
+      responses:
+        "200":
+          description: Companies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Company"
+
+  /reports:
+    get:
+      operationId: listReports
+      tags: [reports]
+      summary: List generated reports
+      responses:
+        "200":
+          description: Reports list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Report"
+    post:
+      operationId: generateReport
+      tags: [reports]
+      summary: Generate a new report
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportInput"
+      responses:
+        "201":
+          description: Generated report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Report"
+
+  /audit-logs:
+    get:
+      operationId: listAuditLogs
+      tags: [reports]
+      summary: Audit log entries
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: Audit logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditLog"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    DashboardSummary:
+      type: object
+      required: [totalTrades, suspiciousTrades, avgRiskScore, marketSentiment, activeInvestigations, alertsToday, complianceScore]
+      properties:
+        totalTrades:
+          type: integer
+        suspiciousTrades:
+          type: integer
+        avgRiskScore:
+          type: number
+        marketSentiment:
+          type: string
+          enum: [very_bearish, bearish, neutral, bullish, very_bullish]
+        activeInvestigations:
+          type: integer
+        alertsToday:
+          type: integer
+        complianceScore:
+          type: number
+
+    TimeseriesPoint:
+      type: object
+      required: [timestamp, value, label]
+      properties:
+        timestamp:
+          type: string
+        value:
+          type: number
+        label:
+          type: string
+
+    RiskBucket:
+      type: object
+      required: [label, count, percentage]
+      properties:
+        label:
+          type: string
+        count:
+          type: integer
+        percentage:
+          type: number
+
+    HighRiskTrader:
+      type: object
+      required: [id, name, riskScore, totalTrades, suspiciousTrades, status]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        riskScore:
+          type: number
+        totalTrades:
+          type: integer
+        suspiciousTrades:
+          type: integer
+        status:
+          type: string
+
+    SentimentPoint:
+      type: object
+      required: [date, score, label]
+      properties:
+        date:
+          type: string
+        score:
+          type: number
+        label:
+          type: string
+
+    Trade:
+      type: object
+      required: [id, symbol, traderName, tradeType, quantity, price, totalValue, riskScore, isSuspicious, timestamp, companyName, riskLevel]
+      properties:
+        id:
+          type: integer
+        symbol:
+          type: string
+        traderName:
+          type: string
+        tradeType:
+          type: string
+          enum: [buy, sell, short]
+        quantity:
+          type: integer
+        price:
+          type: number
+        totalValue:
+          type: number
+        riskScore:
+          type: number
+        isSuspicious:
+          type: boolean
+        timestamp:
+          type: string
+        companyName:
+          type: string
+        riskLevel:
+          type: string
+          enum: [low, medium, high, critical]
+        anomalyFlags:
+          type: ["array", "null"]
+          items:
+            type: string
+
+    TradeInput:
+      type: object
+      required: [symbol, traderName, tradeType, quantity, price]
+      properties:
+        symbol:
+          type: string
+        traderName:
+          type: string
+        tradeType:
+          type: string
+          enum: [buy, sell, short]
+        quantity:
+          type: integer
+        price:
+          type: number
+
+    TradeList:
+      type: object
+      required: [trades, total]
+      properties:
+        trades:
+          type: array
+          items:
+            $ref: "#/components/schemas/Trade"
+        total:
+          type: integer
+
+    VolumeAnalysis:
+      type: object
+      required: [symbol, avgVolume, currentVolume, volumeRatio, anomalyDetected, companyName]
+      properties:
+        symbol:
+          type: string
+        avgVolume:
+          type: number
+        currentVolume:
+          type: number
+        volumeRatio:
+          type: number
+        anomalyDetected:
+          type: boolean
+        companyName:
+          type: string
+
+    Anomaly:
+      type: object
+      required: [id, traderId, traderName, anomalyType, riskScore, detectedAt, status, modelUsed, confidence]
+      properties:
+        id:
+          type: integer
+        traderId:
+          type: integer
+        traderName:
+          type: string
+        anomalyType:
+          type: string
+        riskScore:
+          type: number
+        detectedAt:
+          type: string
+        status:
+          type: string
+          enum: [pending, under_review, confirmed, cleared]
+        modelUsed:
+          type: string
+        confidence:
+          type: number
+        description:
+          type: ["string", "null"]
+
+    RiskScore:
+      type: object
+      required: [id, traderId, traderName, overallScore, randomForestScore, xgboostScore, isolationForestScore, lstmScore, assessedAt]
+      properties:
+        id:
+          type: integer
+        traderId:
+          type: integer
+        traderName:
+          type: string
+        overallScore:
+          type: number
+        randomForestScore:
+          type: number
+        xgboostScore:
+          type: number
+        isolationForestScore:
+          type: number
+        lstmScore:
+          type: number
+        assessedAt:
+          type: string
+
+    TradingPattern:
+      type: object
+      required: [id, patternType, description, affectedTraders, riskLevel, detectedAt, frequency]
+      properties:
+        id:
+          type: integer
+        patternType:
+          type: string
+        description:
+          type: string
+        affectedTraders:
+          type: integer
+        riskLevel:
+          type: string
+          enum: [low, medium, high, critical]
+        detectedAt:
+          type: string
+        frequency:
+          type: integer
+
+    FeatureImportance:
+      type: object
+      required: [feature, importance, model]
+      properties:
+        feature:
+          type: string
+        importance:
+          type: number
+        model:
+          type: string
+
+    NewsArticle:
+      type: object
+      required: [id, title, source, publishedAt, sentiment, sentimentScore, summary, url, relatedCompanies, isMarketMoving]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        source:
+          type: string
+        publishedAt:
+          type: string
+        sentiment:
+          type: string
+          enum: [positive, neutral, negative]
+        sentimentScore:
+          type: number
+        summary:
+          type: string
+        url:
+          type: string
+        relatedCompanies:
+          type: array
+          items:
+            type: string
+        isMarketMoving:
+          type: boolean
+
+    NamedEntity:
+      type: object
+      required: [entity, entityType, mentionCount, sentiment, relatedArticles]
+      properties:
+        entity:
+          type: string
+        entityType:
+          type: string
+          enum: [PERSON, ORGANIZATION, TICKER, LOCATION, EVENT]
+        mentionCount:
+          type: integer
+        sentiment:
+          type: string
+          enum: [positive, neutral, negative]
+        relatedArticles:
+          type: integer
+
+    MarketEvent:
+      type: object
+      required: [id, eventType, description, detectedAt, impactLevel, affectedSymbols, confidence]
+      properties:
+        id:
+          type: integer
+        eventType:
+          type: string
+        description:
+          type: string
+        detectedAt:
+          type: string
+        impactLevel:
+          type: string
+          enum: [low, medium, high, critical]
+        affectedSymbols:
+          type: array
+          items:
+            type: string
+        confidence:
+          type: number
+
+    Investigation:
+      type: object
+      required: [id, caseNumber, title, status, priority, assignedTo, createdAt, updatedAt, traderName, riskScore, aiSummary]
+      properties:
+        id:
+          type: integer
+        caseNumber:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+          enum: [open, in_progress, closed, escalated]
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+        assignedTo:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        traderName:
+          type: string
+        riskScore:
+          type: number
+        aiSummary:
+          type: string
+        analystNotes:
+          type: ["string", "null"]
+        evidence:
+          type: ["array", "null"]
+          items:
+            type: string
+
+    InvestigationInput:
+      type: object
+      required: [title, traderName, riskScore, priority]
+      properties:
+        title:
+          type: string
+        traderName:
+          type: string
+        riskScore:
+          type: number
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+        assignedTo:
+          type: string
+
+    InvestigationUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [open, in_progress, closed, escalated]
+        analystNotes:
+          type: string
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+        assignedTo:
+          type: string
+
+    Alert:
+      type: object
+      required: [id, alertType, title, message, severity, isResolved, createdAt, relatedEntity]
+      properties:
+        id:
+          type: integer
+        alertType:
+          type: string
+        title:
+          type: string
+        message:
+          type: string
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+        isResolved:
+          type: boolean
+        createdAt:
+          type: string
+        relatedEntity:
+          type: string
+        resolvedAt:
+          type: ["string", "null"]
+
+    Company:
+      type: object
+      required: [id, symbol, name, sector, marketCap, riskLevel, lastUpdated]
+      properties:
+        id:
+          type: integer
+        symbol:
+          type: string
+        name:
+          type: string
+        sector:
+          type: string
+        marketCap:
+          type: number
+        riskLevel:
+          type: string
+          enum: [low, medium, high, critical]
+        lastUpdated:
+          type: string
+
+    Report:
+      type: object
+      required: [id, title, reportType, generatedAt, generatedBy, status, period]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        reportType:
+          type: string
+          enum: [regulatory, trend_analysis, investigation_summary, compliance]
+        generatedAt:
+          type: string
+        generatedBy:
+          type: string
+        status:
+          type: string
+          enum: [generating, ready, failed]
+        period:
+          type: string
+        downloadUrl:
+          type: ["string", "null"]
+
+    ReportInput:
+      type: object
+      required: [title, reportType, period]
+      properties:
+        title:
+          type: string
+        reportType:
+          type: string
+          enum: [regulatory, trend_analysis, investigation_summary, compliance]
+        period:
+          type: string
+
+    AuditLog:
+      type: object
+      required: [id, action, userId, userName, timestamp, resource, details]
+      properties:
+        id:
+          type: integer
+        action:
+          type: string
+        userId:
+          type: integer
+        userName:
+          type: string
+        timestamp:
+          type: string
+        resource:
+          type: string
+        details:
+          type: string
