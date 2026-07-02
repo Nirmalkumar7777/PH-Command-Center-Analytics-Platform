@@ -1,6 +1,6 @@
 🏥 Public Health Program Effectiveness & Population Health Dashboard
 
-[Live Demo](https://c038e2d6-193b-4500-8cb1-d28a34c552cb-00-1544h0g0rly5i.pike.replit.dev/?utm_source=chatgpt.com)
+[Live Demo]([https://c038e2d6-193b-4500-8cb1-d28a34c552cb-00-1544h0g0rly5i.pike.replit.dev/?utm_source=chatgpt.com](https://c038e2d6-193b-4500-8cb1-d28a34c552cb-00-1544h0g0rly5i.pike.replit.dev/))
 
 📌 Overview
 
